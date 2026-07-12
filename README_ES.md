@@ -48,13 +48,13 @@ Copia el archivo de ejemplo y ajústalo si es necesario:
 ```bash
 cp .env.example .env
 ```
-El archivo .env por defecto funciona para desarrollo local con Docker.
+El archivo `.env` por defecto funciona para desarrollo local con Docker.
 
 ### 3. Ejecutar con Docker
 ```bash
 docker-compose up --build
 ```
-La API estará disponible en http://localhost:8001.
+La API estará disponible en `http://localhost:8001`.
 
 ### 4. Aplicar migraciones de la base de datos (dentro del contenedor)
 Abre una segunda terminal mientras Docker está corriendo:
@@ -67,10 +67,11 @@ docker-compose exec web alembic upgrade head
 ```bash
 curl http://localhost:8001/api/v1/health
 ```
-Respuesta esperada: {"status":"ok","database":"connected"}
+Respuesta esperada: `{"status":"ok","database":"connected"}`
 
-### 6. Estructura del proyecto
+## Estructura del proyecto
 
+```
 blog-api/
 ├── app/
 │   ├── api/v1/endpoints/   # Manejadores de rutas
@@ -82,7 +83,8 @@ blog-api/
 ├── docker-compose.yml
 ├── Dockerfile
 └── README_ES.md
+```
 
-Licencia
+## Licencia
 
-Este proyecto está bajo la Licencia MIT. Consulta el archivo LICENSE para más detalles.
+Este proyecto está bajo la Licencia MIT. Consulta el archivo [LICENSE](LICENSE) para más detalles.

@@ -48,13 +48,13 @@ Copy the example file and adjust if needed:
 ```bash
 cp .env.example .env
 ```
-The default .env works out-of-the-box for local development with Docker.
+The default `.env` works out-of-the-box for local development with Docker.
 
 ### 3. Run with Docker
 ```bash
 docker-compose up --build
-The API will be available at http://localhost:8001.
 ```
+The API will be available at `http://localhost:8001`.
 
 ### 4. Apply database migrations (inside the container)
 Open a second terminal while Docker is running:
@@ -67,10 +67,11 @@ docker-compose exec web alembic upgrade head
 ```bash
 curl http://localhost:8001/api/v1/health
 ```
-Expected response: {"status":"ok","database":"connected"}
+Expected response: `{"status":"ok","database":"connected"}`
 
-### 6. Project Structure
+## Project Structure
 
+```
 blog-api/
 ├── app/
 │   ├── api/v1/endpoints/   # Route handlers
@@ -82,7 +83,8 @@ blog-api/
 ├── docker-compose.yml
 ├── Dockerfile
 └── README.md
+```
 
-License
+## License
 
-This project is licensed under the MIT License. See LICENSE file for details.
+This project is licensed under the MIT License. See [LICENSE](LICENSE) file for details.
