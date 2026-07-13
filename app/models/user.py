@@ -14,6 +14,6 @@ class User(Base):
     full_name: Mapped[str] = mapped_column(String(255), nullable=True)
     is_active: Mapped[bool] = mapped_column(Boolean, default=True)
     is_superuser: Mapped[bool] = mapped_column(Boolean, default=False)
-
+    role: Mapped[str] = mapped_column(String(50), default="reader", nullable=False)
     posts = relationship("Post", back_populates="author")
     comments = relationship("Comment", back_populates="author")
