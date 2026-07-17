@@ -28,3 +28,4 @@ class Post(Base):
     category = relationship("Category", back_populates="posts")
     tags = relationship("Tag", secondary=post_tag, back_populates="posts")
     comments = relationship("Comment", back_populates="post")
+    cover_image: Mapped[str] = mapped_column(String(500), nullable=True)

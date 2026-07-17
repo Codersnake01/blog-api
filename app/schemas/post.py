@@ -28,6 +28,7 @@ class PostResponse(BaseModel):
     updated_at: datetime
     author_id: int
     category_id: int | None = None
+    cover_image: str | None = None
 
     author: UserResponse | None = None
     category: CategoryResponse | None = None
