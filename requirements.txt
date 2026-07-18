@@ -11,6 +11,7 @@ click==8.4.2
 cloudinary==1.45.0
 colorama==0.4.6
 cryptography==49.0.0
+deprecated==1.3.1
 dnspython==2.8.0
 ecdsa==0.19.2
 email-validator==2.3.0
@@ -19,8 +20,10 @@ greenlet==3.5.3
 h11==0.16.0
 httptools==0.8.0
 idna==3.18
+limits==5.8.0
 mako==1.3.12
 markupsafe==3.0.3
+packaging==26.2
 passlib==1.7.4
 pyasn1==0.6.4
 pycparser==3.0
@@ -33,6 +36,7 @@ python-multipart==0.0.32
 pyyaml==6.0.3
 rsa==4.9.1
 six==1.17.0
+slowapi==0.1.10
 sqlalchemy==2.0.51
 starlette==1.3.1
 typing-extensions==4.16.0
@@ -41,3 +45,4 @@ urllib3==2.7.0
 uvicorn==0.51.0
 watchfiles==1.2.0
 websockets==16.1
+wrapt==2.2.2
