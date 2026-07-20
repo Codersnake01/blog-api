@@ -1,7 +1,10 @@
-from fastapi import APIRouter, Depends, HTTPException, Query, status, Request
+from fastapi import APIRouter, Depends, HTTPException, Query, status, Request, Form, UploadFile, File
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 from sqlalchemy.orm import selectinload
+import tempfile
+import os
+
 from app.db.session import get_db
 from app.models.post import Post
 from app.models.tag import Tag
@@ -9,6 +12,8 @@ from app.schemas.post import PostCreate, PostUpdate, PostResponse
 from app.api.deps import get_current_user
 from app.models.user import User
 from app.core.limiter import limiter
+from app.core.logger import logger
+from app.services.cloudinary_service import upload_image
 
 router = APIRouter()
 
@@ -46,35 +51,67 @@ async def list_posts(
 @limiter.limit("10/minute")
 async def create_post(
     request: Request,
-    post_in: PostCreate,
+    title: str = Form(...),
+    content: str = Form(...),
+    is_published: bool = Form(False),
+    category_id: int | None = Form(None),
+    tag_ids: str = Form(""),
+    cover_image_file: UploadFile | None = File(None),
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
-    post = Post(
-        title=post_in.title,
-        content=post_in.content,
-        is_published=post_in.is_published,
-        author_id=current_user.id,
-        category_id=post_in.category_id,
-    )
-    if post_in.tag_ids:
-        result = await db.execute(select(Tag).where(Tag.id.in_(post_in.tag_ids)))
-        tags = result.scalars().all()
-        post.tags = list(tags)
+    if current_user.role not in ("admin", "author"):
+        raise HTTPException(status_code=403, detail="Only authors can create posts")
+    post_data = {
+        "title": title,
+        "content": content,
+        "is_published": is_published,
+        "author_id": current_user.id,
+        "category_id": category_id,
+    }
+
+    # Subir imagen si se adjuntó
+    if cover_image_file and cover_image_file.filename:
+        with tempfile.NamedTemporaryFile(delete=False, suffix=os.path.splitext(cover_image_file.filename)[1]) as tmp:
+            content_bytes = await cover_image_file.read()
+            tmp.write(content_bytes)
+            tmp_path = tmp.name
+        try:
+            cover_url = await upload_image(tmp_path)
+            post_data["cover_image"] = cover_url
+        finally:
+            os.unlink(tmp_path)
+
+    post = Post(**post_data)
+
+    # Asignar etiquetas
+    if tag_ids:
+        ids = [int(t) for t in tag_ids.split(",") if t.isdigit()]
+        if ids:
+            result = await db.execute(select(Tag).where(Tag.id.in_(ids)))
+            post.tags = list(result.scalars().all())
+
     db.add(post)
     await db.commit()
     await db.refresh(post)
+
+    logger.info(f"User {current_user.id} ({current_user.email}) created post {post.id}: '{post.title}'")
+
     # Recargar relaciones para la respuesta
-    stmt = select(Post).where(Post.id == post.id).options(
-        selectinload(Post.author), selectinload(Post.category), selectinload(Post.tags)
+    stmt = (
+        select(Post)
+        .where(Post.id == post.id)
+        .options(selectinload(Post.author), selectinload(Post.category), selectinload(Post.tags))
     )
     post_with_rel = (await db.execute(stmt)).scalars().first()
     return post_with_rel
 
 @router.get("/{post_id}", response_model=PostResponse)
 async def get_post(post_id: int, db: AsyncSession = Depends(get_db)):
-    stmt = select(Post).where(Post.id == post_id, Post.is_deleted == False).options(
-        selectinload(Post.author), selectinload(Post.category), selectinload(Post.tags)
+    stmt = (
+        select(Post)
+        .where(Post.id == post_id, Post.is_deleted == False)
+        .options(selectinload(Post.author), selectinload(Post.category), selectinload(Post.tags))
     )
     result = await db.execute(stmt)
     post = result.scalars().first()
@@ -104,8 +141,10 @@ async def update_post(
         post.tags = list(result.scalars().all())
     await db.commit()
     await db.refresh(post)
-    stmt = select(Post).where(Post.id == post.id).options(
-        selectinload(Post.author), selectinload(Post.category), selectinload(Post.tags)
+    stmt = (
+        select(Post)
+        .where(Post.id == post.id)
+        .options(selectinload(Post.author), selectinload(Post.category), selectinload(Post.tags))
     )
     updated_post = (await db.execute(stmt)).scalars().first()
     return updated_post
