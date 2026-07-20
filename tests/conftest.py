@@ -1,4 +1,6 @@
 import os
+os.environ["PYTEST_CURRENT_TEST"] = "true"   # ← FUERZA TESTING ANTES DE CUALQUIER IMPORT
+
 import pytest
 from httpx import AsyncClient, ASGITransport
 from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker, AsyncSession
@@ -6,9 +8,6 @@ from app.db.base import Base
 from app.db.session import get_db
 from app.main import app
 from unittest.mock import patch
-
-# Forzar modo testing (desactiva rate limiting)
-os.environ["TESTING"] = "true"
 
 TEST_DATABASE_URL = "sqlite+aiosqlite:///./test.db"
 
@@ -47,6 +46,5 @@ async def client(test_db):
 
 @pytest.fixture
 def mock_cloudinary():
-    """Mockea la función upload_image para que devuelva una URL falsa."""
     with patch("app.api.v1.endpoints.posts.upload_image", return_value="http://fake.cloud/url.jpg") as mock:
         yield mock

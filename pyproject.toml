@@ -1,26 +1,76 @@
 [project]
 name = "blog-api"
 version = "0.1.0"
-description = "Add your description here"
-readme = "README.md"
-requires-python = ">=3.14"
+description = "Blog API profesional con FastAPI"
+requires-python = ">=3.11"
 dependencies = [
-    "aiofiles>=25.1.0",
-    "alembic>=1.18.5",
-    "asyncpg>=0.31.0",
+    "aiofiles",
+    "aiosqlite",
+    "alembic",
+    "annotated-doc",
+    "annotated-types",
+    "anyio",
+    "asyncpg",
     "bcrypt==4.0.1",
-    "cloudinary>=1.45.0",
-    "fastapi>=0.139.0",
-    "passlib[bcrypt]>=1.7.4",
-    "pydantic-settings>=2.14.2",
-    "pydantic[email]>=2.13.4",
-    "python-dotenv>=1.2.2",
-    "python-jose[cryptography]>=3.5.0",
-    "python-multipart>=0.0.32",
-    "slowapi>=0.1.10",
-    "sqlalchemy[asyncio]>=2.0.51",
-    "uvicorn[standard]>=0.51.0",
+    "certifi",
+    "cffi",
+    "click",
+    "cloudinary",
+    "colorama",
+    "cryptography",
+    "deprecated",
+    "dnspython",
+    "ecdsa",
+    "email-validator",
+    "fastapi",
+    "greenlet",
+    "h11",
+    "httptools",
+    "idna",
+    "limits",
+    "mako",
+    "markupsafe",
+    "packaging",
+    "passlib",
+    "pyasn1",
+    "pycparser",
+    "pydantic",
+    "pydantic-core",
+    "pydantic-settings",
+    "python-dotenv",
+    "python-jose",
+    "python-multipart",
+    "pyyaml",
+    "rsa",
+    "six",
+    "slowapi",
+    "sqlalchemy",
+    "starlette",
+    "typing-extensions",
+    "typing-inspection",
+    "urllib3",
+    "uvicorn",
+    "watchfiles",
+    "websockets",
+    "wrapt",
 ]
+
+[project.optional-dependencies]
+dev = [
+    "coverage",
+    "httpcore",
+    "httpx",
+    "iniconfig",
+    "pluggy",
+    "pygments",
+    "pytest",
+    "pytest-asyncio",
+    "pytest-cov",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+asyncio_mode = "auto"
 
 [dependency-groups]
 dev = [
