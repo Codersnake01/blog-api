@@ -25,9 +25,6 @@ Professional blog API built with **FastAPI**, **SQLAlchemy 2.0** (async), **Post
 - ✅ Comprehensive test suite (86% coverage)
 - ✅ CI/CD pipeline with GitHub Actions (lint, type check, tests, coverage)
 - ✅ Deployed on Render with Supabase PostgreSQL
-- ⬜ Advanced admin dashboard
-- ⬜ Email notifications
-- ⬜ Background tasks
 
 ## Tech Stack
 
