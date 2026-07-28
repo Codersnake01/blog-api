@@ -1,21 +1,33 @@
-from fastapi import APIRouter, Depends, HTTPException, Query, status, Request, Form, UploadFile, File
-from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select
-from sqlalchemy.orm import selectinload
-import tempfile
 import os
+import tempfile
 
+from fastapi import (
+    APIRouter,
+    Depends,
+    File,
+    Form,
+    HTTPException,
+    Query,
+    Request,
+    UploadFile,
+    status,
+)
+from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import selectinload
+
+from app.api.deps import get_current_user
+from app.core.limiter import limiter
+from app.core.logger import logger
 from app.db.session import get_db
 from app.models.post import Post
 from app.models.tag import Tag
-from app.schemas.post import PostCreate, PostUpdate, PostResponse
-from app.api.deps import get_current_user
 from app.models.user import User
-from app.core.limiter import limiter
-from app.core.logger import logger
+from app.schemas.post import PostResponse, PostUpdate
 from app.services.cloudinary_service import upload_image
 
 router = APIRouter()
+
 
 @router.get("/", response_model=list[PostResponse])
 async def list_posts(
@@ -28,9 +40,9 @@ async def list_posts(
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
-    stmt = select(Post).where(Post.is_deleted == False)
+    stmt = select(Post).where(not Post.is_deleted)
     if published_only:
-        stmt = stmt.where(Post.is_published == True)
+        stmt = stmt.where(Post.is_published)
     if category_id:
         stmt = stmt.where(Post.category_id == category_id)
     if author_id:
@@ -39,13 +51,18 @@ async def list_posts(
         stmt = stmt.join(Post.tags).where(Tag.id == tag_id)
     stmt = (
         stmt
-        .options(selectinload(Post.author), selectinload(Post.category), selectinload(Post.tags))
+        .options(
+            selectinload(Post.author),
+            selectinload(Post.category),
+            selectinload(Post.tags),
+        )
         .offset(skip)
         .limit(limit)
         .order_by(Post.created_at.desc())
     )
     result = await db.execute(stmt)
     return result.scalars().all()
+
 
 @router.post("/", response_model=PostResponse, status_code=status.HTTP_201_CREATED)
 @limiter.limit("10/minute")
@@ -62,6 +79,7 @@ async def create_post(
 ):
     if current_user.role not in ("admin", "author"):
         raise HTTPException(status_code=403, detail="Only authors can create posts")
+
     post_data = {
         "title": title,
         "content": content,
@@ -70,9 +88,9 @@ async def create_post(
         "category_id": category_id,
     }
 
-    # Subir imagen si se adjuntó
     if cover_image_file and cover_image_file.filename:
-        with tempfile.NamedTemporaryFile(delete=False, suffix=os.path.splitext(cover_image_file.filename)[1]) as tmp:
+        suffix = os.path.splitext(cover_image_file.filename)[1]
+        with tempfile.NamedTemporaryFile(delete=False, suffix=suffix) as tmp:
             content_bytes = await cover_image_file.read()
             tmp.write(content_bytes)
             tmp_path = tmp.name
@@ -84,7 +102,6 @@ async def create_post(
 
     post = Post(**post_data)
 
-    # Asignar etiquetas
     if tag_ids:
         ids = [int(t) for t in tag_ids.split(",") if t.isdigit()]
         if ids:
@@ -95,29 +112,41 @@ async def create_post(
     await db.commit()
     await db.refresh(post)
 
-    logger.info(f"User {current_user.id} ({current_user.email}) created post {post.id}: '{post.title}'")
+    logger.info(
+        f"User {current_user.id} ({current_user.email}) "
+        f"created post {post.id}: '{post.title}'"
+    )
 
-    # Recargar relaciones para la respuesta
     stmt = (
         select(Post)
         .where(Post.id == post.id)
-        .options(selectinload(Post.author), selectinload(Post.category), selectinload(Post.tags))
+        .options(
+            selectinload(Post.author),
+            selectinload(Post.category),
+            selectinload(Post.tags),
+        )
     )
     post_with_rel = (await db.execute(stmt)).scalars().first()
     return post_with_rel
+
 
 @router.get("/{post_id}", response_model=PostResponse)
 async def get_post(post_id: int, db: AsyncSession = Depends(get_db)):
     stmt = (
         select(Post)
-        .where(Post.id == post_id, Post.is_deleted == False)
-        .options(selectinload(Post.author), selectinload(Post.category), selectinload(Post.tags))
+        .where(Post.id == post_id, not Post.is_deleted)
+        .options(
+            selectinload(Post.author),
+            selectinload(Post.category),
+            selectinload(Post.tags),
+        )
     )
     result = await db.execute(stmt)
     post = result.scalars().first()
     if not post:
         raise HTTPException(status_code=404, detail="Post not found")
     return post
+
 
 @router.put("/{post_id}", response_model=PostResponse)
 async def update_post(
@@ -126,12 +155,15 @@ async def update_post(
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
-    result = await db.execute(select(Post).where(Post.id == post_id, Post.is_deleted == False))
+    result = await db.execute(
+        select(Post).where(Post.id == post_id, not Post.is_deleted)
+    )
     post = result.scalars().first()
     if not post:
         raise HTTPException(status_code=404, detail="Post not found")
     if post.author_id != current_user.id and current_user.role != "admin":
         raise HTTPException(status_code=403, detail="Not enough permissions")
+
     update_data = post_in.model_dump(exclude_unset=True)
     tag_ids = update_data.pop("tag_ids", None)
     for field, value in update_data.items():
@@ -139,15 +171,22 @@ async def update_post(
     if tag_ids is not None:
         result = await db.execute(select(Tag).where(Tag.id.in_(tag_ids)))
         post.tags = list(result.scalars().all())
+
     await db.commit()
     await db.refresh(post)
+
     stmt = (
         select(Post)
         .where(Post.id == post.id)
-        .options(selectinload(Post.author), selectinload(Post.category), selectinload(Post.tags))
+        .options(
+            selectinload(Post.author),
+            selectinload(Post.category),
+            selectinload(Post.tags),
+        )
     )
     updated_post = (await db.execute(stmt)).scalars().first()
     return updated_post
+
 
 @router.delete("/{post_id}", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_post(
@@ -155,7 +194,9 @@ async def delete_post(
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
-    result = await db.execute(select(Post).where(Post.id == post_id, Post.is_deleted == False))
+    result = await db.execute(
+        select(Post).where(Post.id == post_id, not Post.is_deleted)
+    )
     post = result.scalars().first()
     if not post:
         raise HTTPException(status_code=404, detail="Post not found")

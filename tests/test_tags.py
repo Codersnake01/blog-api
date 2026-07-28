@@ -1,5 +1,6 @@
 import pytest
 from sqlalchemy import select
+
 from app.models.user import User
 
 
@@ -64,7 +65,9 @@ async def test_create_tag_admin_only(client, test_db):
     token = login_resp.json()["access_token"]
     headers = {"Authorization": f"Bearer {token}"}
 
-    resp = await client.post("/api/v1/tags/", json={"name": "AdminTag"}, headers=headers)
+    resp = await client.post(
+        "/api/v1/tags/", json={"name": "AdminTag"}, headers=headers
+    )
     assert resp.status_code == 201
 
     # Reader

@@ -1,8 +1,11 @@
-from datetime import datetime, timezone
-from sqlalchemy import String, Boolean, ForeignKey, Text, DateTime
+from datetime import UTC, datetime
+
+from sqlalchemy import Boolean, DateTime, ForeignKey, String, Text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
+
 from app.db.base import Base
 from app.models.tag import post_tag
+
 
 class Post(Base):
     __tablename__ = "posts"
@@ -13,12 +16,12 @@ class Post(Base):
     is_published: Mapped[bool] = mapped_column(Boolean, default=False)
     is_deleted: Mapped[bool] = mapped_column(Boolean, default=False)  # borrado lógico
     created_at: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True), default=lambda: datetime.now(timezone.utc)
+        DateTime(timezone=True), default=lambda: datetime.now(UTC)
     )
     updated_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),
-        default=lambda: datetime.now(timezone.utc),
-        onupdate=lambda: datetime.now(timezone.utc),
+        default=lambda: datetime.now(UTC),
+        onupdate=lambda: datetime.now(UTC),
     )
 
     author_id: Mapped[int] = mapped_column(ForeignKey("users.id"), nullable=False)

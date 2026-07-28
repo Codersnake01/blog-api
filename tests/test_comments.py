@@ -1,5 +1,6 @@
 import pytest
 from sqlalchemy import select
+
 from app.models.user import User
 
 
@@ -28,15 +29,11 @@ async def test_create_comment(client, test_db):
     token = login_resp.json()["access_token"]
     headers = {"Authorization": f"Bearer {token}"}
 
-    # Crear categoría, tag y post necesarios
-    # Para simplificar, promovamos al mismo usuario a admin para crear categorías/tags, luego lo dejamos como author.
-    # Mejor: creamos un admin aparte para crear el post.
-    # Vamos a reutilizar el mismo usuario dándole rol admin temporalmente, crear recursos, luego devolver a author.
+    # Para crear recursos necesarios, promovemos temporalmente a admin
     commenter.role = "admin"
     await test_db.commit()
     await client.post("/api/v1/categories/", json={"name": "Tech"}, headers=headers)
     await client.post("/api/v1/tags/", json={"name": "Python"}, headers=headers)
-    # Crear post como admin
     post_resp = await client.post(
         "/api/v1/posts/",
         data={"title": "Post for comments", "content": "Content"},
@@ -44,7 +41,6 @@ async def test_create_comment(client, test_db):
     )
     assert post_resp.status_code == 201
     post_id = post_resp.json()["id"]
-    # Devolver rol a author
     commenter.role = "author"
     await test_db.commit()
 
@@ -60,7 +56,7 @@ async def test_create_comment(client, test_db):
     assert comment["author"]["id"] == commenter.id
     comment_id = comment["id"]
 
-    # Intentar eliminar comentario con otro usuario (sin permisos)
+    # Intentar eliminar comentario con otro usuario
     await client.post(
         "/api/v1/auth/register",
         json={
@@ -79,7 +75,7 @@ async def test_create_comment(client, test_db):
     del_resp = await client.delete(
         f"/api/v1/comments/comments/{comment_id}", headers=other_headers
     )
-    assert del_resp.status_code == 403  # No es autor ni admin
+    assert del_resp.status_code == 403
 
     # El autor sí puede eliminar
     del_resp2 = await client.delete(

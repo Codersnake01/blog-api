@@ -5,7 +5,7 @@
 ![License](https://img.shields.io/badge/license-MIT-green)
 ![CI](https://github.com/Codersnake01/blog-api/actions/workflows/ci.yml/badge.svg)
 [![codecov](https://codecov.io/gh/Codersnake01/blog-api/branch/main/graph/badge.svg)](https://codecov.io/gh/Codersnake01/blog-api)
-> **Demo en vivo (Swagger):** [https://blog-api-q3s5.onrender.com/docs](https://blog-api-q3s5.onrender.com/docs)  
+> **Demo en vivo (Swagger):** [https://blog-api-q3s5.onrender.com/docs](https://blog-api-q3s5.onrender.com/docs)
 > **Colección de Postman:** [Descargar](https://github.com/Codersnake01/blog-api/blob/main/Blog_API.postman_collection.json)
 
 API profesional de blog construida con **FastAPI**, **SQLAlchemy 2.0** (asíncrono), **PostgreSQL**, **Docker** y **autenticación JWT**.

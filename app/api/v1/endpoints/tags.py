@@ -1,11 +1,12 @@
 from fastapi import APIRouter, Depends, HTTPException, status
-from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
+
+from app.api.deps import get_current_admin, get_current_user
 from app.db.session import get_db
 from app.models.tag import Tag
-from app.schemas.tag import TagCreate, TagResponse
-from app.api.deps import get_current_admin, get_current_user
 from app.models.user import User
+from app.schemas.tag import TagCreate, TagResponse
 
 router = APIRouter()
 
@@ -52,7 +53,9 @@ async def update_tag(
     result = await db.execute(select(Tag).where(Tag.id == tag_id))
     tag = result.scalars().first()
     if not tag:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Tag not found")
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Tag not found"
+        )
     # Check if new name already exists (excluding current tag)
     existing = await db.execute(
         select(Tag).where(Tag.name == tag_in.name, Tag.id != tag_id)
@@ -78,7 +81,9 @@ async def delete_tag(
     result = await db.execute(select(Tag).where(Tag.id == tag_id))
     tag = result.scalars().first()
     if not tag:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Tag not found")
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Tag not found"
+        )
     await db.delete(tag)
     await db.commit()
     # No content returned (status 204)

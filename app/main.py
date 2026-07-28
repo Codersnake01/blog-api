@@ -1,13 +1,13 @@
-import os
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from slowapi.middleware import SlowAPIMiddleware
+
 from app.api.v1.router import api_router
 from app.core.limiter import limiter
 
 app = FastAPI(
     title="Blog API",
-    description="API de blog profesional con roles, categorías, etiquetas, comentarios y subida de imágenes",
+    description="Blog API profesional con roles, categorías, etiquetas y comentarios",
     version="0.1.0",
 )
 

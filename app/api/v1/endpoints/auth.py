@@ -1,19 +1,24 @@
-from fastapi import APIRouter, Depends, HTTPException, status, Request
-from fastapi.security import OAuth2PasswordRequestForm
-from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select
 from datetime import timedelta
+
+from fastapi import APIRouter, Depends, HTTPException, Request, status
+from fastapi.security import OAuth2PasswordRequestForm
+from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
+
+from app.core.limiter import limiter
+from app.core.security import create_access_token, get_password_hash, verify_password
 from app.db.session import get_db
 from app.models.user import User
-from app.schemas.user import UserCreate, Token
-from app.core.security import get_password_hash, verify_password, create_access_token
-from app.core.limiter import limiter
+from app.schemas.user import Token, UserCreate
 
 router = APIRouter()
 
+
 @router.post("/register", response_model=Token, status_code=status.HTTP_201_CREATED)
 @limiter.limit("3/minute")
-async def register(request: Request, user_in: UserCreate, db: AsyncSession = Depends(get_db)):
+async def register(
+    request: Request, user_in: UserCreate, db: AsyncSession = Depends(get_db)
+):
     result = await db.execute(select(User).where(User.email == user_in.email))
     if result.scalars().first():
         raise HTTPException(status_code=400, detail="Email already registered")
@@ -22,26 +27,29 @@ async def register(request: Request, user_in: UserCreate, db: AsyncSession = Dep
         email=user_in.email,
         hashed_password=hashed_pw,
         full_name=user_in.full_name,
-        role="reader"
+        role="reader",
     )
     db.add(new_user)
     await db.commit()
     await db.refresh(new_user)
     access_token = create_access_token(
-        data={"sub": str(new_user.id)},
-        expires_delta=timedelta(minutes=30)
+        data={"sub": str(new_user.id)}, expires_delta=timedelta(minutes=30)
     )
     return {"access_token": access_token, "token_type": "bearer"}
 
+
 @router.post("/login", response_model=Token)
 @limiter.limit("5/minute")
-async def login(request: Request, form_data: OAuth2PasswordRequestForm = Depends(), db: AsyncSession = Depends(get_db)):
+async def login(
+    request: Request,
+    form_data: OAuth2PasswordRequestForm = Depends(),
+    db: AsyncSession = Depends(get_db),
+):
     result = await db.execute(select(User).where(User.email == form_data.username))
     user = result.scalars().first()
     if not user or not verify_password(form_data.password, user.hashed_password):
         raise HTTPException(status_code=401, detail="Invalid credentials")
     access_token = create_access_token(
-        data={"sub": str(user.id)},
-        expires_delta=timedelta(minutes=30)
+        data={"sub": str(user.id)}, expires_delta=timedelta(minutes=30)
     )
     return {"access_token": access_token, "token_type": "bearer"}

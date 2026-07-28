@@ -1,6 +1,7 @@
 from pydantic import AnyUrl
 from pydantic_settings import BaseSettings
 
+
 class Settings(BaseSettings):
     model_config = {
         "env_file": ".env",
@@ -12,5 +13,6 @@ class Settings(BaseSettings):
     CLOUDINARY_CLOUD_NAME: str = "qtcyxptv"
     CLOUDINARY_API_KEY: str = "637946757755496"
     CLOUDINARY_API_SECRET: str = "hh2MrNprGvGILJUvC-rxCw1qbio"
+
 
 settings = Settings()

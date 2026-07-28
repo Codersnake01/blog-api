@@ -1,19 +1,24 @@
 import os
-os.environ["PYTEST_CURRENT_TEST"] = "true"   # ← FUERZA TESTING ANTES DE CUALQUIER IMPORT
+
+os.environ["PYTEST_CURRENT_TEST"] = "true"  # ← FUERZA TESTING ANTES DE CUALQUIER IMPORT
+
+from unittest.mock import patch
 
 import pytest
-from httpx import AsyncClient, ASGITransport
-from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker, AsyncSession
+from httpx import ASGITransport, AsyncClient
+from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
+
 from app.db.base import Base
 from app.db.session import get_db
 from app.main import app
-from unittest.mock import patch
 
 TEST_DATABASE_URL = "sqlite+aiosqlite:///./test.db"
+
 
 @pytest.fixture(scope="session")
 def anyio_backend():
     return "asyncio"
+
 
 @pytest.fixture(scope="session")
 async def test_engine():
@@ -23,15 +28,19 @@ async def test_engine():
     yield engine
     await engine.dispose()
 
+
 @pytest.fixture
 async def test_db(test_engine):
-    async_session = async_sessionmaker(test_engine, class_=AsyncSession, expire_on_commit=False)
+    async_session = async_sessionmaker(
+        test_engine, class_=AsyncSession, expire_on_commit=False
+    )
     async with async_session() as session:
         yield session
         # Limpiar tablas después de cada test
         for table in reversed(Base.metadata.sorted_tables):
             await session.execute(table.delete())
         await session.commit()
+
 
 @pytest.fixture
 async def client(test_db):
@@ -44,7 +53,11 @@ async def client(test_db):
         yield ac
     app.dependency_overrides.clear()
 
+
 @pytest.fixture
 def mock_cloudinary():
-    with patch("app.api.v1.endpoints.posts.upload_image", return_value="http://fake.cloud/url.jpg") as mock:
+    with patch(
+        "app.api.v1.endpoints.posts.upload_image",
+        return_value="http://fake.cloud/url.jpg",
+    ) as mock:
         yield mock
