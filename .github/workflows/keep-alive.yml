@@ -3,11 +3,11 @@ name: Keep-Alive
 on:
   schedule:
     - cron: "0 */6 * * *"  # Cada 6 horas
-  workflow_dispatch:
+  workflow_dispatch:        # Para ejecutarlo manualmente
 
 jobs:
   ping:
     runs-on: ubuntu-latest
     steps:
       - name: Ping Blog API
-        run: curl -s -o /dev/null -w "%{http_code}" https://blog-api-q3s5.onrender.com
+        run: curl -s -o /dev/null -w "%{http_code}" https://blog-api-q3s5.onrender.com/api/v1/health
