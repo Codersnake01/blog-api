@@ -1,0 +1,622 @@
+{
+  "info": {
+    "_postman_id": "fe1f0d2b-4d24-4a59-9b34-c453c82d1d2f",
+    "name": "Blog API",
+    "description": "### Welcome to Postman! This is your first collection. \n\nCollections are your starting point for building and testing APIs. You can use this one to:\n\n• Group related requests\n• Test your API in real-world scenarios\n• Document and share your requests\n\nUpdate the name and overview whenever you’re ready to make it yours.\n\n[Learn more about Postman Collections.](https://learning.postman.com/docs/collections/collections-overview/)",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "56824042"
+  },
+  "item": [
+    {
+      "name": "Auth",
+      "item": [
+        {
+          "name": "POST Register",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"email\": \"test@example.com\",\r\n  \"password\": \"secret123\",\r\n  \"full_name\": \"Test User\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/auth/register",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "register"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "POST Login",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var jsonData = pm.response.json();\r",
+                  "if (jsonData.access_token) {\r",
+                  "    pm.collectionVariables.set(\"token\", jsonData.access_token);\r",
+                  "    console.log(\"Token guardado automáticamente\");\r",
+                  "}"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "username",
+                  "value": "test@example.com",
+                  "type": "text",
+                  "uuid": "7b6df866-9f1f-4a7e-9bf8-1a9401f45c45"
+                },
+                {
+                  "key": "password",
+                  "value": "secret123",
+                  "type": "text",
+                  "uuid": "555bdb5f-733a-4283-b01e-962a40999ccf"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/auth/login\n",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "login\n"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Posts",
+      "item": [
+        {
+          "name": "GET List Posts",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/posts/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "posts",
+                ""
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "POST Create Post",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var jsonData = pm.response.json();\r",
+                  "if (jsonData.id) {\r",
+                  "    pm.collectionVariables.set(\"post_id\", jsonData.id);\r",
+                  "    console.log(\"Post ID guardado: \" + jsonData.id);\r",
+                  "}"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "title",
+                  "value": "Mi post de prueba",
+                  "type": "text",
+                  "uuid": "35d2f3d8-4164-4736-9db1-9fe9f73ca792"
+                },
+                {
+                  "key": "content",
+                  "value": "Contenido del post",
+                  "type": "text",
+                  "uuid": "18688560-fd7f-496a-bcd8-9627e5ac44ee"
+                },
+                {
+                  "key": "is_published",
+                  "value": "true",
+                  "type": "text",
+                  "uuid": "ab881f2d-9d8b-4a77-85e0-c8576420c87c"
+                },
+                {
+                  "key": "category_id",
+                  "value": "2",
+                  "type": "text",
+                  "uuid": "ba2cf568-de88-40f0-a4da-bcc7d5169b19"
+                },
+                {
+                  "key": "tag_ids",
+                  "value": "4",
+                  "type": "text",
+                  "uuid": "7d5c65c5-1673-45c9-bb45-486767513e3f"
+                },
+                {
+                  "key": "cover_image_file",
+                  "type": "file",
+                  "uuid": "3e523908-0b8f-4ecf-9b32-773504d68c47",
+                  "src": "postman-cloud:///1f189c37-21f5-44c0-8050-6773c70522b2"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/posts/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "posts",
+                ""
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "GET Get Post",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/posts/{{post_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "posts",
+                "{{post_id}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "PUT Update Post",
+          "request": {
+            "method": "PUT",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"title\": \"Título actualizado\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/posts/{{post_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "posts",
+                "{{post_id}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "DELETE Delete Post",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/posts/{{post_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "posts",
+                "{{post_id}}"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Categories",
+      "item": [
+        {
+          "name": "GET List Categories",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/categories/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "categories",
+                ""
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "POST Create Category",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"name\": \"Tech\"}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/categories/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "categories",
+                ""
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "PUT Update Category",
+          "request": {
+            "method": "PUT",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"name\": \"Tech Actualizado\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/categories/1",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "categories",
+                "1"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "DELETE Delete Category",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/categories/1",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "categories",
+                "1"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Tags",
+      "item": [
+        {
+          "name": "GET List Tags",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/tags/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "tags",
+                ""
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "POST Create Tag",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"name\":\"Python\"}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/tags/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "tags",
+                ""
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "PUT Update Tag",
+          "request": {
+            "method": "PUT",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"name\": \"FastAPI\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/tags/1",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "tags",
+                "1"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "DELETE Delete Tag",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/tags/1",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "tags",
+                "1"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Comments",
+      "item": [
+        {
+          "name": "POST Create Comment",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"content\": \"¡Excelente post!\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/comments/posts/{{post_id}}/comments",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "comments",
+                "posts",
+                "{{post_id}}",
+                "comments"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "DELETE Delete Comment",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/comments/comments/1\n\n",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "comments",
+                "comments",
+                "1\n\n"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Get data",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Status code is 200\", function () {",
+              "    pm.response.to.have.status(200);",
+              "});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "postman-echo.com/get",
+          "host": [
+            "postman-echo",
+            "com"
+          ],
+          "path": [
+            "get"
+          ]
+        },
+        "description": "This is a GET request and it is used to \"get\" data from an endpoint. There is no request body for a GET request, but you can use query parameters to help specify the resource you want data on (e.g., in this request, we have `id=1`).\n\nA successful GET response will have a `200 OK` status, and should include some kind of response body - for example, HTML web content or JSON data."
+      },
+      "response": []
+    },
+    {
+      "name": "Post data",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Successful POST request\", function () {",
+              "    pm.expect(pm.response.code).to.be.oneOf([200, 201]);",
+              "});",
+              ""
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n\t\"name\": \"Add your name in the body\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "postman-echo.com/post",
+          "host": [
+            "postman-echo",
+            "com"
+          ],
+          "path": [
+            "post"
+          ]
+        },
+        "description": "This is a POST request, submitting data to an API via the request body. This request submits JSON data, and the data is reflected in the response.\n\nA successful POST request typically returns a `200 OK` or `201 Created` response code."
+      },
+      "response": []
+    }
+  ],
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{token}}",
+        "type": "string"
+      }
+    ]
+  },
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "packages": {},
+        "requests": {},
+        "exec": [
+          ""
+        ]
+      }
+    },
+    {
+      "listen": "test",
+      "script": {
+        "type": "text/javascript",
+        "packages": {},
+        "requests": {},
+        "exec": [
+          ""
+        ]
+      }
+    }
+  ],
+  "variable": [
+    {
+      "key": "base_url",
+      "value": ""
+    },
+    {
+      "key": "token",
+      "value": ""
+    },
+    {
+      "key": "post_id",
+      "value": ""
+    }
+  ]
+}
