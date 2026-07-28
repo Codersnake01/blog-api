@@ -40,9 +40,9 @@ async def list_posts(
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
-    stmt = select(Post).where(not Post.is_deleted)
+    stmt = select(Post).where(Post.is_deleted == False)
     if published_only:
-        stmt = stmt.where(Post.is_published)
+        stmt = stmt.where(Post.is_published == True)
     if category_id:
         stmt = stmt.where(Post.category_id == category_id)
     if author_id:
@@ -50,8 +50,7 @@ async def list_posts(
     if tag_id:
         stmt = stmt.join(Post.tags).where(Tag.id == tag_id)
     stmt = (
-        stmt
-        .options(
+        stmt.options(
             selectinload(Post.author),
             selectinload(Post.category),
             selectinload(Post.tags),
@@ -134,7 +133,7 @@ async def create_post(
 async def get_post(post_id: int, db: AsyncSession = Depends(get_db)):
     stmt = (
         select(Post)
-        .where(Post.id == post_id, not Post.is_deleted)
+        .where(Post.id == post_id, Post.is_deleted == False)
         .options(
             selectinload(Post.author),
             selectinload(Post.category),
@@ -156,7 +155,7 @@ async def update_post(
     db: AsyncSession = Depends(get_db),
 ):
     result = await db.execute(
-        select(Post).where(Post.id == post_id, not Post.is_deleted)
+        select(Post).where(Post.id == post_id, Post.is_deleted == False)
     )
     post = result.scalars().first()
     if not post:
@@ -195,7 +194,7 @@ async def delete_post(
     db: AsyncSession = Depends(get_db),
 ):
     result = await db.execute(
-        select(Post).where(Post.id == post_id, not Post.is_deleted)
+        select(Post).where(Post.id == post_id, Post.is_deleted == False)
     )
     post = result.scalars().first()
     if not post:

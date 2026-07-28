@@ -24,7 +24,7 @@ async def create_comment(
     db: AsyncSession = Depends(get_db),
 ):
     result = await db.execute(
-        select(Post).where(Post.id == post_id, not Post.is_deleted)
+        select(Post).where(Post.id == post_id, Post.is_deleted == False)
     )
     post = result.scalars().first()
     if not post:

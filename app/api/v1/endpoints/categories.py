@@ -13,7 +13,8 @@ router = APIRouter()
 
 @router.get("/", response_model=list[CategoryResponse])
 async def list_categories(
-    current_user: User = Depends(get_current_user), db: AsyncSession = Depends(get_db)
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
 ):
     result = await db.execute(select(Category))
     return result.scalars().all()
@@ -43,8 +44,8 @@ async def update_category(
     cat = result.scalars().first()
     if not cat:
         raise HTTPException(status_code=404, detail="Category not found")
-    cat.name = cat_in.name
-    cat.description = cat_in.description
+    cat.name = cat_in.name or ""
+    cat.description = cat_in.description or ""
     await db.commit()
     await db.refresh(cat)
     return cat
